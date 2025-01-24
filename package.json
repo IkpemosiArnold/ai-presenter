@@ -25,7 +25,6 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "@babel/plugin-transform-runtime": "^7.25.9",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

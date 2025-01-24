@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Worker, Viewer } from "@react-pdf-viewer/core";
+import dynamic from "next/dynamic";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import AIChat from "./AIChat";
 import VoiceInteraction from "./VoiceInteraction";
+
+// Dynamically import the PDF viewer with SSR disabled
+const PDFViewer = dynamic(() => import("./PDFViewerComponent"), { ssr: false });
 
 export default function PresentationViewer({ id }: { id: string }) {
   const [fileUrl, setFileUrl] = useState("");
@@ -36,11 +39,7 @@ export default function PresentationViewer({ id }: { id: string }) {
   return (
     <div className="flex flex-col h-screen">
       <div className="flex-1 overflow-auto">
-        {fileUrl && (
-          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
-            <Viewer fileUrl={fileUrl} />
-          </Worker>
-        )}
+        {fileUrl && <PDFViewer fileUrl={fileUrl} />}
       </div>
       <div className="h-1/3 border-t">
         {isVoiceMode ? (

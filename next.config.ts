@@ -1,10 +1,10 @@
-const nextConfig = {
-  webpack: (config, options) => {
-    // Important: return the modified config
-    config.module.rules.push({
-      test: /\.node/,
-      use: "raw-loader",
-    });
+// next.config.js
+module.exports = {
+  webpack: (config) => {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      canvas: false,
+    };
     return config;
   },
 };

@@ -3,12 +3,20 @@ import { getSignedFileUrl } from "../../../../utils/s3";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string | string[] } }
 ) {
   const id = params.id;
 
+  // Check if id is an array (invalid case for this route)
+  if (Array.isArray(id)) {
+    return NextResponse.json(
+      { error: "Invalid file ID format" },
+      { status: 400 }
+    );
+  }
+
   try {
-    const url = await getSignedFileUrl(`${id}.pdf`); // Assuming PDF for now, you might need to store file extensions
+    const url = await getSignedFileUrl(`${id}.pdf`);
     return NextResponse.json({ url });
   } catch (error) {
     console.error("Error retrieving file URL:", error);

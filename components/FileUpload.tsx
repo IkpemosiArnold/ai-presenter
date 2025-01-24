@@ -1,3 +1,4 @@
+// components/FileUpload.tsx
 "use client";
 
 import { useState } from "react";
@@ -9,26 +10,37 @@ export default function FileUpload() {
 
   const onDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
-    const formData = new FormData();
-    formData.append("file", file);
-
     setIsUploading(true);
 
     try {
+      // Get pre-signed URL from API
       const response = await fetch("/api/upload", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileType: file.type,
+        }),
       });
 
-      if (response.ok) {
-        const { id, url } = await response.json();
-        const presentationLink = `${window.location.origin}/presentation/${id}`;
-        setLink(presentationLink);
-      } else {
-        throw new Error("File upload failed");
-      }
+      if (!response.ok) throw new Error("Failed to get upload URL");
+
+      const { id, url: presignedUrl } = await response.json();
+
+      // Upload file directly to S3
+      const s3Response = await fetch(presignedUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      if (!s3Response.ok) throw new Error("Upload failed");
+
+      setLink(`${window.location.origin}/presentation/${id}`);
     } catch (error) {
-      console.error("Error uploading file:", error);
+      console.error("Upload error:", error);
       alert("File upload failed. Please try again.");
     } finally {
       setIsUploading(false);
@@ -59,9 +71,7 @@ export default function FileUpload() {
         ) : isDragActive ? (
           <p>Drop the file here ...</p>
         ) : (
-          <p>
-            Drag 'n' drop a PDF or PPTX file here, or click to select a file
-          </p>
+          <p>Drag 'n' drop a PDF or PPTX file here, or click to select</p>
         )}
       </div>
       {link && (

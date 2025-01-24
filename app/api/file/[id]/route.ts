@@ -1,3 +1,4 @@
+import "regenerator-runtime/runtime"; // Top of your server component
 import { type NextRequest, NextResponse } from "next/server";
 import { getSignedFileUrl } from "../../../../utils/s3";
 

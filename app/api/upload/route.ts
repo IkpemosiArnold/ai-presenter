@@ -1,26 +1,40 @@
-import { type NextRequest, NextResponse } from "next/server";
+// app/api/upload/route.ts
+import { NextResponse } from "next/server";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuidv4 } from "uuid";
-import { uploadFileToS3 } from "../../../utils/s3";
 
-export async function POST(req: NextRequest) {
-  const formData = await req.formData();
-  const file = formData.get("file") as File;
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION!,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
 
-  if (!file) {
-    return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
-  }
+export async function POST(request: Request) {
+  const { fileName, fileType } = await request.json();
 
+  // Generate unique file name
   const id = uuidv4();
-  const fileExtension = file.name.split(".").pop();
-  const fileName = `${id}.${fileExtension}`;
+  const fileExtension = fileName.split(".").pop();
+  const s3FileName = `${id}.${fileExtension}`;
+
+  // Generate pre-signed URL for S3 upload
+  const command = new PutObjectCommand({
+    Bucket: process.env.AWS_S3_BUCKET_NAME!,
+    Key: s3FileName,
+    ContentType: fileType,
+  });
 
   try {
-    const fileBuffer = await file.arrayBuffer();
-    const url = await uploadFileToS3(Buffer.from(fileBuffer), fileName);
-
+    const url = await getSignedUrl(s3Client, command, { expiresIn: 60 });
     return NextResponse.json({ id, url });
   } catch (error) {
-    console.error("Error uploading file:", error);
-    return NextResponse.json({ error: "File upload failed" }, { status: 500 });
+    console.error("Error generating pre-signed URL:", error);
+    return NextResponse.json(
+      { error: "Failed to generate upload URL" },
+      { status: 500 }
+    );
   }
 }

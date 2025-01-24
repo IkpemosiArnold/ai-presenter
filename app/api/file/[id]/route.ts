@@ -3,23 +3,18 @@ import { getSignedFileUrl } from "../../../../utils/s3";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string | string[] } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = params.id;
-
-  // Check if id is an array (invalid case for this route)
-  if (Array.isArray(id)) {
-    return NextResponse.json(
-      { error: "Invalid file ID format" },
-      { status: 400 }
-    );
-  }
-
   try {
+    // Await the params promise
+    const { id } = await params;
+
+    // Generate signed URL
     const url = await getSignedFileUrl(`${id}.pdf`);
+
     return NextResponse.json({ url });
   } catch (error) {
-    console.error("Error retrieving file URL:", error);
+    console.error("Error in file retrieval:", error);
     return NextResponse.json(
       { error: "File retrieval failed" },
       { status: 500 }

@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'TheRadar - Cyberserve',
-  description: 'Cyberserve Interactive Proposal by TheRadar,
+  description: 'Cyberserve Interactive Proposal by TheRadar',
 };
 
 export default function RootLayout({

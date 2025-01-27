@@ -49,15 +49,6 @@ export default function Home() {
         />
       ) : (
         <main className="container mx-auto p-4">
-          <div className="flex justify-end mb-4">
-            <Button
-              onClick={handleDownload}
-              className="bg-accent hover:bg-accent/80 text-accent-foreground glow"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Download Full Presentation
-            </Button>
-          </div>
           <ChatInterface />
         </main>
       )}
